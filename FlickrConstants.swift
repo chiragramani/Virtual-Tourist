@@ -11,7 +11,7 @@ import Foundation
 extension FlickrClient
 {
 
-    struct Constants {
+   struct Constants {
         
             static let APIScheme = "https"
             static let APIHost = "api.flickr.com"

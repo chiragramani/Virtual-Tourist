@@ -178,9 +178,8 @@ class TravelLocationsMapViewController: UIViewController,MKMapViewDelegate,UIGes
     }
     
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
-        let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pin")
+        let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pin") as MKPinAnnotationView
         annotationView.canShowCallout = false
-        
         return annotationView
     }
     

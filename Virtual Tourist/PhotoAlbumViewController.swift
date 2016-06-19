@@ -24,7 +24,7 @@ class PhotoAlbumViewController: UIViewController,UICollectionViewDelegate,UIColl
     
     var fetchedResultsController : NSFetchedResultsController?{
         didSet{
-           fetchedResultsController?.delegate = self
+            fetchedResultsController?.delegate = self
             executeSearch()
             myCollectionView.reloadData()
         }
@@ -58,7 +58,6 @@ class PhotoAlbumViewController: UIViewController,UICollectionViewDelegate,UIColl
                                                               managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController?.delegate=self
         
-        
     }
     
     func setMapRegion()->Void
@@ -86,7 +85,6 @@ class PhotoAlbumViewController: UIViewController,UICollectionViewDelegate,UIColl
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         
-        print("Entered cellforitematindex")
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("CellIdentifier", forIndexPath: indexPath) as! PhotoCollectionViewCell
         
         cell.photoImage.image=UIImage(named: "placeHolder")
@@ -94,20 +92,31 @@ class PhotoAlbumViewController: UIViewController,UICollectionViewDelegate,UIColl
         cell.activityIndicator.startAnimating()
         
         let photo = fetchedResultsController!.objectAtIndexPath(indexPath) as! Photos
-        
-        FlickrClient.sharedInstance.downloadImage(photo)
-        { (success,error) in
-            if success
-            {
-                cell.activityIndicator.stopAnimating()
-                cell.activityIndicator.hidden=true
-                cell.photoImage.image=UIImage(data: photo.photo!)
-            }
-            else
-            {
-                cell.activityIndicator.stopAnimating()
-                cell.activityIndicator.hidden=true
-            }
+        if photo.photo==nil
+        {
+            FlickrClient.sharedInstance.downloadImage(photo)
+            { (success,error) in
+                
+                performUIUpdatesOnMain(){
+                    if success
+                    {
+                        cell.activityIndicator.stopAnimating()
+                        cell.activityIndicator.hidden=true
+                        cell.photoImage.image=UIImage(data: photo.photo!)
+                    }
+                    else
+                    {
+                        cell.activityIndicator.stopAnimating()
+                        cell.activityIndicator.hidden=true
+                    }
+                }}
+        }
+        else
+        {
+            cell.activityIndicator.stopAnimating()
+            cell.activityIndicator.hidden=true
+            cell.photoImage.image=UIImage(data: photo.photo!)
+            
         }
         return cell
     }
@@ -138,13 +147,13 @@ class PhotoAlbumViewController: UIViewController,UICollectionViewDelegate,UIColl
         switch type {
             
         case .Insert:
-            print("Entered into insert")
+            
             guard let newIndexPath = newIndexPath else { return }
             let op = NSBlockOperation { [weak self] in self?.myCollectionView.insertItemsAtIndexPaths([newIndexPath]) }
             blockOperations.append(op)
             
         case .Update:
-            print("It is an update")
+            
             guard let newIndexPath = newIndexPath else { return }
             let op = NSBlockOperation { [weak self] in self?.myCollectionView.reloadItemsAtIndexPaths([newIndexPath]) }
             blockOperations.append(op)
@@ -206,42 +215,42 @@ class PhotoAlbumViewController: UIViewController,UICollectionViewDelegate,UIColl
         let stack = delegate.stack
         if sender.title=="Remove Selected Items"
         {
-        for photo in selectedPhotos
-        {
-            stack.context.deleteObject(photo)
+            for photo in selectedPhotos
+            {
+                stack.context.deleteObject(photo)
             }
         }
         else
         {
-        
-           for photo in  (fetchedResultsController?.fetchedObjects as! [Photos])
-           {
-           
-            stack.context.deleteObject(photo)
             
+            for photo in  (fetchedResultsController?.fetchedObjects as! [Photos])
+            {
+                
+                stack.context.deleteObject(photo)
+                
             }
             FlickrClient.sharedInstance.fetchPhotosForLocationFromFlickr(false, pin: self.selectedPin!)
             {
-            (success,error) in
+                (success,error) in
                 
-            if !success
-            {
-                performUIUpdatesOnMain(){
-             let alertController=UIAlertController(title: "Error", message: error, preferredStyle: .Alert)
-             alertController.addAction(UIAlertAction(title: "Dismiss", style: .Default, handler: nil))
-            self.presentViewController(alertController, animated: true, completion: nil)
-                }
+                if !success
+                {
+                    performUIUpdatesOnMain(){
+                        let alertController=UIAlertController(title: "Error", message: error, preferredStyle: .Alert)
+                        alertController.addAction(UIAlertAction(title: "Dismiss", style: .Default, handler: nil))
+                        self.presentViewController(alertController, animated: true, completion: nil)
+                    }
                 }
             }
-        
-        do{
-        try stack.saveContext()
-        }catch
-        {
-        print("Cannot remove photos")
+            
+            do{
+                try stack.saveContext()
+            }catch
+            {
+                print("Cannot remove photos")
+            }
+            sender.title="New Collections"
         }
-        sender.title="New Collections"
+        
     }
-
-}
 }

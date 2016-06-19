@@ -8,14 +8,14 @@
 
 import Foundation
 
-class FlickrClient:NSObject
+final class FlickrClient:NSObject
 {
     static let sharedInstance = FlickrClient()
     override init() {
         super.init()
     }
     
-    func taskForGETMethod(parameters: [String:AnyObject], completionHandlerForGET: (result: AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask {
+   final func taskForGETMethod(parameters: [String:AnyObject], completionHandlerForGET: (result: AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask {
         
         let request = NSMutableURLRequest(URL: URLFromParameters(parameters, withPathExtension: nil))
         
@@ -80,7 +80,7 @@ class FlickrClient:NSObject
     }
     
     // create a URL from parameters
-    private func URLFromParameters(parameters: [String:AnyObject], withPathExtension: String? = nil) -> NSURL {
+  final  private func URLFromParameters(parameters: [String:AnyObject], withPathExtension: String? = nil) -> NSURL {
         
         let components = NSURLComponents()
         components.scheme = FlickrClient.Constants.APIScheme

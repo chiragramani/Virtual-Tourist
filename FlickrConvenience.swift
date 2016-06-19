@@ -12,7 +12,7 @@ import UIKit
 extension FlickrClient
 {
     
-    func fetchPhotosForLocationFromFlickr(newPin:Bool,pin:Pins,completionHandler:(success: Bool, errorString: String?) -> Void) {
+   final func fetchPhotosForLocationFromFlickr(newPin:Bool,pin:Pins,completionHandler:(success: Bool, errorString: String?) -> Void) {
         var parameters = [String: AnyObject]()
         let minimumLon = pin.longitude as! Double - FlickrClient.Constants.SearchBBoxHalfWidth
         let minimumLat = pin.latitude as! Double - FlickrClient.Constants.SearchBBoxHalfHeight
@@ -36,7 +36,7 @@ extension FlickrClient
         {
             let totalPages=UInt32(pin.totalNumberOfPages!)
             let randomPageNumber=Int(arc4random_uniform(totalPages!)+1)
-            parameters[FlickrClient.FlickrParameterKeys.Page] = "\(randomPageNumber)"
+            parameters[FlickrClient.FlickrParameterKeys.Page] = "\(min(randomPageNumber,20))"
         }
         
         taskForGETMethod(parameters) { (results, error) in
@@ -65,8 +65,11 @@ extension FlickrClient
                     completionHandler(success: false, errorString: "Invalid response")
                     return
                 }
+                dispatch_async(dispatch_get_main_queue())
+                {
+                  pin.totalNumberOfPages = "\(pages)"  
+                }
                 
-                pin.totalNumberOfPages = "\(pages)"
                 
                 guard let photos=response[FlickrClient.JSONResponseKeys.Photo] as? [[String: AnyObject]] else
                 {
@@ -94,7 +97,7 @@ extension FlickrClient
     }
     
     
-    func downloadImage(photo:Photos,completionHandler:(success: Bool, errorString: String?) -> Void)
+ final   func downloadImage(photo:Photos,completionHandler:(success: Bool, errorString: String?) -> Void)
     {
         let downloadTask=NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: photo.filePath!)!)
         { (data, reponse, error) in
