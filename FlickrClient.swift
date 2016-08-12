@@ -11,6 +11,7 @@ import Foundation
 final class FlickrClient:NSObject
 {
     static let sharedInstance = FlickrClient()
+    
     override init() {
         super.init()
     }
